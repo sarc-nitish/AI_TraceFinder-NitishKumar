@@ -5,6 +5,7 @@ from PIL import Image
 from torchvision import transforms
 import gdown
 import os
+from pdf2image import convert_from_bytes
 
 # -------------------------------
 # CNN Model (same as training)
@@ -83,16 +84,23 @@ st.set_page_config(page_title="TraceFinder - Scanner Identification", layout="ce
 st.markdown("<h1 style='text-align:center; color:#2E86C1;'>TraceFinder</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align:center; color:#444;'>Forensic Scanner Identification</h2>", unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("📂 Upload Image", type=["png","jpg","jpeg","tif","tiff","bmp"])
+# File uploader (image or PDF)
+uploaded_file = st.file_uploader("📂 Upload Image or PDF", type=["png","jpg","jpeg","tif","tiff","bmp","pdf"])
 
 if uploaded_file:
-    pil_img = Image.open(uploaded_file)
+    if uploaded_file.type == "application/pdf":
+        # PDF uploaded, extract first page
+        pages = convert_from_bytes(uploaded_file.read())
+        pil_img = pages[0]
+    else:
+        # normal image
+        pil_img = Image.open(uploaded_file)
 
     # Layout: 2 columns (image left, result right)
     col1, col2 = st.columns([1,1])
 
     with col1:
-        st.image(pil_img, caption="Uploaded Image", width=280)
+        st.image(pil_img, caption="Uploaded Image / PDF Page", width=280)
 
     with col2:
         scanner, confidence = predict_scanner(pil_img)
