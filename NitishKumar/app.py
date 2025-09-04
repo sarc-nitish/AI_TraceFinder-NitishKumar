@@ -7,9 +7,8 @@ import gdown
 import os
 from pdf2image import convert_from_bytes
 
-# -------------------------------
+
 # CNN Model (same as training)
-# -------------------------------
 class ScannerCNN(nn.Module):
     def __init__(self, num_classes):
         super(ScannerCNN, self).__init__()
@@ -27,9 +26,8 @@ class ScannerCNN(nn.Module):
         x = self.fc2(x)
         return x
 
-# -------------------------------
+
 # Load Model from Google Drive
-# -------------------------------
 MODEL_PATH = "cnnmodel.pth"
 DRIVE_URL = "https://drive.google.com/uc?id=1sBVjG1Rr_3oBg3GafLE2I1U94azWSSBu"
 
@@ -51,17 +49,15 @@ model = ScannerCNN(num_classes).to(device)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 
-# -------------------------------
+
 # Image Transform
-# -------------------------------
 transform = transforms.Compose([
     transforms.Resize((256,256)),
     transforms.ToTensor()
 ])
 
-# -------------------------------
+
 # Prediction Function
-# -------------------------------
 def predict_scanner(pil_image, temperature=1.0):
     img = pil_image.convert("L")   # grayscale input for model
     img_tensor = transform(img).unsqueeze(0).to(device)
@@ -75,9 +71,8 @@ def predict_scanner(pil_image, temperature=1.0):
     conf_percent = conf.item() * 100
     return predicted_scanner, conf_percent
 
-# -------------------------------
+
 # Streamlit App
-# -------------------------------
 st.set_page_config(page_title="TraceFinder - Scanner Identification", layout="centered")
 
 # Header
@@ -96,11 +91,11 @@ if uploaded_file:
         # normal image
         pil_img = Image.open(uploaded_file)
 
-    # Layout: 2 columns (image left, result right)
+    # Layout: 2 columns 
     col1, col2 = st.columns([1,1])
 
     with col1:
-        st.image(pil_img, caption="Uploaded Image / PDF Page", width=280)
+        st.image(pil_img, caption="Uploaded Image / PDF ", width=280)
 
     with col2:
         scanner, confidence = predict_scanner(pil_img)
@@ -108,3 +103,4 @@ if uploaded_file:
         st.subheader("Prediction Result ")
         st.write(f"**Scanner:** {scanner}")
         st.write(f"**Confidence:** {confidence:.2f}%")
+
