@@ -39,11 +39,16 @@ def get_model(model_name, num_classes):
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model_name = "efficientnet_b0"   # change if needed
 num_classes = 11  
-idx2label = {0:"Canon120-1", 1:"Canon120-2", 2:"Canon220", 3:"Canon9000-1", 
-             4:"Canon9000-2", 5:"EpsonV39-1", 6:"EpsonV39-2", 7:"EpsonV370-1", 
-             8:"EpsonV370-2", 9:"EpsonV550", 10:"HP"}
+idx2label = {
+    0:"Canon120-1", 1:"Canon120-2", 2:"Canon220", 3:"Canon9000-1", 
+    4:"Canon9000-2", 5:"EpsonV39-1", 6:"EpsonV39-2", 7:"EpsonV370-1", 
+    8:"EpsonV370-2", 9:"EpsonV550", 10:"HP"
+}
 
-model_path = "efficientnet_b0_scanner.pth"
+#  Correct relative path
+BASE_DIR = os.path.dirname(__file__)
+model_path = os.path.join(BASE_DIR, "efficientnet_b0_scanner.pth")
+
 model = get_model(model_name, num_classes).to(device)
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.eval()
@@ -84,13 +89,13 @@ if uploaded_file:
 
     col1, col2 = st.columns([1, 1])
     with col1:
-        st.image(pil_img, caption="Uploaded Image / PDF  Page", width=280)
+        st.image(pil_img, caption="Uploaded Image / PDF Page", width=280)
 
         residual = get_residual_from_image(pil_img)
-        
+        st.image(residual, caption="Extracted Residual", width=280)
 
     with col2:
         st.subheader("Prediction Result")
-        scanner, confidence = predict_scanner(pil_img, temperature=2.0)
+        scanner, confidence = predict_scanner(residual, temperature=2.0)
         st.write(f"**Scanner:** {scanner}")
         st.write(f"**Confidence:** {confidence:.2f}%")
