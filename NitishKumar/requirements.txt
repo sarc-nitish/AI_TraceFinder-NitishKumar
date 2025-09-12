@@ -2,5 +2,7 @@ streamlit
 torch
 torchvision
 pillow
-gdown
+opencv-python-headless
 pdf2image
+tqdm
+numpy
