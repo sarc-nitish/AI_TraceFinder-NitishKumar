@@ -1,106 +1,96 @@
-import streamlit as st
+import os
+import cv2
+import numpy as np
 import torch
 import torch.nn as nn
+from torchvision import models, transforms
 from PIL import Image
-from torchvision import transforms
-import gdown
-import os
 from pdf2image import convert_from_bytes
+import streamlit as st
 
+# --------------------------
+# Residual Extraction
+# --------------------------
+def get_residual_from_image(pil_img):
+    img_gray = np.array(pil_img.convert("L"))  # grayscale
+    denoised = cv2.fastNlMeansDenoising(img_gray, None, h=10)
+    residual = cv2.subtract(img_gray, denoised)
+    return Image.fromarray(residual)
 
-# CNN Model (same as training)
-class ScannerCNN(nn.Module):
-    def __init__(self, num_classes):
-        super(ScannerCNN, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
-        self.pool = nn.MaxPool2d(2,2)
-        self.conv2 = nn.Conv2d(32,64,3,padding=1)
-        self.fc1 = nn.Linear(64*64*64,256)  # for 256x256 input
-        self.fc2 = nn.Linear(256,num_classes)
+# --------------------------
+# Model Loader
+# --------------------------
+def get_model(model_name, num_classes):
+    if model_name == "resnet18":
+        model = models.resnet18(pretrained=False)
+        model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)  
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+    elif model_name == "efficientnet_b0":
+        model = models.efficientnet_b0(pretrained=False)
+        model.features[0][0] = nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=1, bias=False)
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
+    else:
+        raise ValueError("Unsupported model")
+    return model
 
-    def forward(self, x):
-        x = self.pool(torch.relu(self.conv1(x)))
-        x = self.pool(torch.relu(self.conv2(x)))
-        x = x.view(x.size(0), -1)
-        x = torch.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-
-# Load Model from Google Drive
-MODEL_PATH = "cnnmodel.pth"
-DRIVE_URL = "https://drive.google.com/uc?id=1sBVjG1Rr_3oBg3GafLE2I1U94azWSSBu"
-
-if not os.path.exists(MODEL_PATH):
-    st.info("Downloading CNN model from Google Drive...")
-    gdown.download(DRIVE_URL, MODEL_PATH, quiet=False)
-
+# --------------------------
+# Load Model
+# --------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"
+model_name = "efficientnet_b0"   # change if needed
+num_classes = 11  
+idx2label = {0:"Canon120-1", 1:"Canon120-2", 2:"Canon220", 3:"Canon9000-1", 
+             4:"Canon9000-2", 5:"EpsonV39-1", 6:"EpsonV39-2", 7:"EpsonV370-1", 
+             8:"EpsonV370-2", 9:"EpsonV550", 10:"HP"}
 
-unique_labels = ["Canon120-1", "Canon120-2", "Canon220", "Canon9000-1", 
-                 "Canon9000-2", "EpsonV370-1", "EpsonV370-2", 
-                 "EpsonV39-1", "EpsonV39-2", "EpsonV550", "HP"]
-
-label2idx = {l:i for i,l in enumerate(unique_labels)}
-idx2label = {i:l for l,i in label2idx.items()}
-
-num_classes = len(unique_labels)
-model = ScannerCNN(num_classes).to(device)
-model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+model_path = "efficientnet_b0_scanner.pth"
+model = get_model(model_name, num_classes).to(device)
+model.load_state_dict(torch.load(model_path, map_location=device))
 model.eval()
 
-
-# Image Transform
-transform = transforms.Compose([
-    transforms.Resize((256,256)),
-    transforms.ToTensor()
-])
-
-
+# --------------------------
 # Prediction Function
-def predict_scanner(pil_image, temperature=1.0):
-    img = pil_image.convert("L")   # grayscale input for model
-    img_tensor = transform(img).unsqueeze(0).to(device)
+# --------------------------
+def predict_scanner(pil_img, temperature=1.0):
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor()
+    ])
+    img = pil_img.convert("L")
+    img = transform(img).unsqueeze(0).to(device)
 
     with torch.no_grad():
-        outputs = model(img_tensor)
-        probs = torch.softmax(outputs / temperature, dim=1)
-        conf, pred_idx = torch.max(probs, dim=1)
+        outputs = model(img)
+        probs = torch.softmax(outputs / temperature, dim=1)[0]
+        pred_idx = probs.argmax().item()
+        pred_label = idx2label[pred_idx]
+        confidence = probs[pred_idx].item() * 100
+    return pred_label, confidence
 
-    predicted_scanner = idx2label[pred_idx.item()]
-    conf_percent = conf.item() * 100
-    return predicted_scanner, conf_percent
-
-
-# Streamlit App
-st.set_page_config(page_title="TraceFinder - Scanner Identification", layout="centered")
-
-# Header
+# --------------------------
+# Streamlit UI
+# --------------------------
 st.markdown("<h1 style='text-align:center; color:#2E86C1;'>TraceFinder</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align:center; color:#444;'>Forensic Scanner Identification</h2>", unsafe_allow_html=True)
 
-# File uploader (image or PDF)
 uploaded_file = st.file_uploader("📂 Upload Image or PDF", type=["png","jpg","jpeg","tif","tiff","bmp","pdf"])
 
 if uploaded_file:
     if uploaded_file.type == "application/pdf":
-        # PDF uploaded, extract first page
         pages = convert_from_bytes(uploaded_file.read())
-        pil_img = pages[0]
+        pil_img = pages[0]   
     else:
-        # normal image
         pil_img = Image.open(uploaded_file)
 
-    # Layout: 2 columns 
-    col1, col2 = st.columns([1,1])
-
+    col1, col2 = st.columns([1, 1])
     with col1:
-        st.image(pil_img, caption="Uploaded Image / PDF ", width=280)
+        st.image(pil_img, caption="Uploaded Image / PDF  Page", width=280)
+
+        residual = get_residual_from_image(pil_img)
+        
 
     with col2:
-        scanner, confidence = predict_scanner(pil_img)
-
-        st.subheader("Prediction Result ")
+        st.subheader("Prediction Result")
+        scanner, confidence = predict_scanner(pil_img, temperature=2.0)
         st.write(f"**Scanner:** {scanner}")
         st.write(f"**Confidence:** {confidence:.2f}%")
-
