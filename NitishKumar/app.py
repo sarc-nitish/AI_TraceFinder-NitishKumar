@@ -9,15 +9,6 @@ from pdf2image import convert_from_bytes
 import streamlit as st
 
 # --------------------------
-# Residual Extraction
-# --------------------------
-def get_residual_from_image(pil_img):
-    img_gray = np.array(pil_img.convert("L"))  # grayscale
-    denoised = cv2.fastNlMeansDenoising(img_gray, None, h=10)
-    residual = cv2.subtract(img_gray, denoised)
-    return Image.fromarray(residual)
-
-# --------------------------
 # Model Loader
 # --------------------------
 def get_model(model_name, num_classes):
@@ -45,7 +36,7 @@ idx2label = {
     8:"EpsonV370-2", 9:"EpsonV550", 10:"HP"
 }
 
-#  Correct relative path
+# ✅ Correct relative path
 BASE_DIR = os.path.dirname(__file__)
 model_path = os.path.join(BASE_DIR, "efficientnet_b0_scanner.pth")
 
@@ -91,10 +82,9 @@ if uploaded_file:
     with col1:
         st.image(pil_img, caption="Uploaded Image / PDF Page", width=280)
 
-
     with col2:
         st.subheader("Prediction Result")
-        scanner, confidence = predict_scanner(residual, temperature=2.0)
+        #  predict directly on pil_img
+        scanner, confidence = predict_scanner(pil_img, temperature=2.0)
         st.write(f"**Scanner:** {scanner}")
         st.write(f"**Confidence:** {confidence:.2f}%")
-
