@@ -91,11 +91,10 @@ if uploaded_file:
     with col1:
         st.image(pil_img, caption="Uploaded Image / PDF Page", width=280)
 
-        residual = get_residual_from_image(pil_img)
-        st.image(residual, caption="Extracted Residual", width=280)
 
     with col2:
         st.subheader("Prediction Result")
         scanner, confidence = predict_scanner(residual, temperature=2.0)
         st.write(f"**Scanner:** {scanner}")
         st.write(f"**Confidence:** {confidence:.2f}%")
+
