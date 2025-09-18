@@ -200,25 +200,19 @@ if st.button("Clear Cache"):
 
 uploaded_file = st.file_uploader(
     "📂 Upload Image or PDF", 
-    type=["png","jpg","jpeg","tif","tiff","bmp","pdf"]
+    type=["png","jpg","jpeg","tif","tiff","bmp"]
 )
 
 if uploaded_file:
-    if uploaded_file.type == "application/pdf":
-        pages = convert_from_bytes(uploaded_file.read())
-        if not pages:
-            st.error("PDF contains no pages!")
-            st.stop()
-        pil_img = pages[0].convert("RGB")
-    else:
-        from io import BytesIO
-        pil_img = Image.open(BytesIO(uploaded_file.read())).convert("RGB")
+    from io import BytesIO
+    pil_img = Image.open(BytesIO(uploaded_file.read())).convert("RGB")
 
     col1, col2 = st.columns([1, 1])
 
     with col1:
         # Always convert to numpy so Streamlit never complains
-        st.image(np.array(pil_img), caption="Uploaded Image / PDF Page", use_container_width=True)
+        st.image(np.array(pil_img), caption="Uploaded Image", use_container_width=True)
+
 
     with col2:
         st.subheader("📊 Prediction Result")
