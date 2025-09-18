@@ -9,15 +9,15 @@ from skimage.feature import local_binary_pattern as sk_lbp
 import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
+from pdf2image import convert_from_bytes
+
 # ==============================
 # Setup
 # ==============================
-st.set_page_config(page_title="Scanner Prediction App", layout="centered")
+st.set_page_config(page_title="TraceFinder", layout="centered")
 
-# Device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Paths to saved artifacts
 BASE_DIR = "NitishKumar"
 FEATURES_DIR = os.path.join(BASE_DIR, "Features")
 MODEL_PATH = os.path.join(FEATURES_DIR, "scanner_hybrid_final.pt")
@@ -100,7 +100,9 @@ class HybridCNN(nn.Module):
         z = self.dropout5(z)
         return self.fc3(z)
 
-# Load model
+# ==============================
+# Load Model
+# ==============================
 @st.cache_resource
 def load_model():
     model = HybridCNN(num_classes=len(le.classes_)).to(device)
@@ -119,7 +121,7 @@ def preprocess_residual(path):
         raise ValueError(f"Cannot read {path}")
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img, (256,256))
+    img = cv2.resize(img, (256,256), interpolation=cv2.INTER_AREA)  # Fix interpolation
     img = img.astype(np.float32)/255.0
     cA,(cH,cV,cD) = pywt.dwt2(img,'haar')
     cH.fill(0); cV.fill(0); cD.fill(0)
@@ -179,45 +181,58 @@ def predict_image(path):
     return label, conf
 
 # ==============================
+# Wrapper for PIL Image
+# ==============================
+def predict_from_pil(pil_img):
+    temp_path = "temp_upload.tif"
+    pil_img.convert("L").save(temp_path, format="TIFF", compression="none")
+    return predict_image(temp_path)
+
+# ==============================
 # Streamlit UI
 # ==============================
-st.set_page_config(page_title="TraceFinder", layout="centered")
-
 st.markdown("<h1 style='text-align:center; color:#2E86C1;'>AI TraceFinder</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align:center; color:#444;'>Forensic Scanner Identification</h2>", unsafe_allow_html=True)
 
-# File Uploader
+if st.button("Clear Cache"):
+    st.cache_resource.clear()
+    st.success("Cache cleared! Please re-upload the image.")
+
 uploaded_file = st.file_uploader(
-    "📂 Upload Image", 
-    type=["png","jpg","jpeg","tif","tiff","bmp"]
+    "📂 Upload Image or PDF", 
+    type=["png","jpg","jpeg","tif","tiff","bmp","pdf"]
 )
 
-# Dummy function (replace with your model)
-def predict_scanner(pil_img, temperature=2.0):
-    time.sleep(2)  # simulate processing
-    return "Canon120-1", 92.45  # example return
-
-# ==============================
-# File Handling + Prediction
-# ==============================
-
-    pil_img = Image.open(uploaded_file)
+if uploaded_file:
+    if uploaded_file.type == "application/pdf":
+        pages = convert_from_bytes(uploaded_file.read())
+        pil_img = pages[0]
+    else:
+        pil_img = Image.open(uploaded_file)
 
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.image(
-            pil_img, 
-            caption="Uploaded Image ", 
-            use_container_width=True   
-        )
+        st.image(pil_img, caption="Uploaded Image / PDF Page", use_container_width=True)
 
     with col2:
-        st.subheader("Prediction Result")
+        st.subheader("📊 Prediction Result")
         with st.spinner("🔎 Predicting... Please wait"):
-            scanner, confidence = predict_scanner(pil_img, temperature=2.0)
+            scanner, confidence = predict_from_pil(pil_img)
 
-        st.success(f"**Predicted Scanner:** {scanner}")
-        st.info(f"**Confidence:** {confidence:.2f}%")
-
-
+        st.markdown(
+            f"""
+            <div style="
+                background-color:#f9f9f9;
+                border:2px solid #2E86C1;
+                border-radius:12px;
+                padding:20px;
+                text-align:center;
+                box-shadow:2px 2px 10px rgba(0,0,0,0.1);
+            ">
+                <p style="font-size:20px; font-weight:bold; color:#333;">Scanner : {scanner}</p>
+                <p style="font-size:18px; color:#27AE60;">Confidence : {confidence:.2f}%</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
