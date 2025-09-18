@@ -211,7 +211,12 @@ if uploaded_file:
 
     with col1:
         # Always convert to numpy so Streamlit never complains
-        st.image(np.array(pil_img.convert("RGB"), dtype=np.uint8), caption="Uploaded Image", use_container_width=True)
+        st.image(
+    np.array(pil_img.convert("RGB"), dtype=np.uint8),
+    caption="Uploaded Image",
+    width=200   # ya apni marzi ka number, auto adjust ho jayega
+)
+
 
 
     with col2:
