@@ -210,12 +210,10 @@ if uploaded_file:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        # Always convert to numpy so Streamlit never complains
-        st.image(
+    
+   st.image(
     np.array(pil_img.convert("RGB"), dtype=np.uint8),
-    caption="Uploaded Image",
-    width=300   
-)
+    caption="Uploaded Image")
 
 
 
