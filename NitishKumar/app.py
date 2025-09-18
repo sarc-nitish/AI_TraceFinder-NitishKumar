@@ -213,7 +213,8 @@ if uploaded_file:
         
       st.image(
     np.array(pil_img.convert("RGB"), dtype=np.uint8),
-    caption="Uploaded Image"
+    caption="Uploaded Image",
+     width=310
 )
 
 
