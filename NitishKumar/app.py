@@ -206,9 +206,13 @@ uploaded_file = st.file_uploader(
 if uploaded_file:
     if uploaded_file.type == "application/pdf":
         pages = convert_from_bytes(uploaded_file.read())
-        pil_img = pages[0]
+        if len(pages) == 0:
+            st.error("⚠️ No pages found in the uploaded PDF.")
+            st.stop()
+        pil_img = pages[0]   
     else:
-        pil_img = Image.open(uploaded_file)
+        pil_img = Image.open(uploaded_file).convert("RGB")  
+
 
     col1, col2 = st.columns([1, 1])
 
