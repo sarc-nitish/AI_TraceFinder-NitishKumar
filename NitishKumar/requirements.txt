@@ -1,5 +1,6 @@
+
 streamlit==1.39.0
-torch==2.4.1
+torch==2.8.0
 numpy==1.26.4
 opencv-python==4.10.0.84
 pywavelets==1.7.0
