@@ -427,7 +427,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="title">🧾 AI TraceFinder: Forensic Scanner Identification</div>', unsafe_allow_html=True)
+st.markdown('<div class="title"> AI TraceFinder: Forensic Scanner Identification</div>', unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader(
     "📂 Upload Image", 
@@ -469,9 +469,9 @@ if uploaded_file:
 
     # Middle: Scanner + Forgery Results
     with col2:
-        st.markdown("### 🔍 Identify Scanner")
+        st.markdown("###  Identify Scanner")
         if scanner_label:
-            st.info(f"**Scanner Name:** {scanner_label}\n\n**Confidence Score:** {scanner_conf:.2f}%")
+            st.info(f"**Scanner :** {scanner_label}\n\n**Confidence :** {scanner_conf:.2f}%")
         else:
             st.error("Scanner Identification Failed.")
 
@@ -482,8 +482,8 @@ if uploaded_file:
                     f"""
                     <div style="background-color:#d4edda; padding:15px; border-radius:10px; border:1px solid #28a745;">
                         <h4 style="color:#155724; margin:0;">✅ Status: Original</h4>
-                        <p style="margin:5px 0;">Probability: {tamper_prob*100:.2f}%</p>
-                        <p style="margin:5px 0;">Confidence: {scanner_conf:.2f}%</p>
+                        <p style="margin:7px 0;">Probability: {tamper_prob*100:.2f}%</p>
+                        <p style="margin:7px 0;">Confidence: {scanner_conf:.2f}%</p>
                     </div>
                     """,
                     unsafe_allow_html=True
@@ -538,13 +538,13 @@ if uploaded_file:
     col1, col2 = st.columns(2)
     with col1:
         st.download_button(
-            "📥 Save Prediction History (CSV)",
+            " Save Prediction History",
             data=csv,
             file_name="prediction_history.csv",
             mime="text/csv"
         )
     with col2:
-        if st.button("📋 View Prediction History"):
+        if st.button(" View Prediction History"):
             st.session_state.show_history = True
 
     st.markdown('</div>', unsafe_allow_html=True)
