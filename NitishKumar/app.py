@@ -492,8 +492,8 @@ if uploaded_file:
                     f"""
                     <div style="background-color:#f8d7da; padding:15px; border-radius:10px; border:1px solid #dc3545;">
                         <h4 style="color:#721c24; margin:0;">⚠️ Status: Tampered</h4>
-                        <p style="margin:5px 0;">Probability: {tamper_prob*100:.2f}%</p>
-                        <p style="margin:5px 0;">Confidence: {scanner_conf:.2f}%</p>
+                        <p style="margin:7px 0; color:red;">Probability: {tamper_prob*100:.2f}%</p>
+                        <p style="margin:7px 0; color:red;">Confidence: {scanner_conf:.2f}%</p>
                     </div>
                     """,
                     unsafe_allow_html=True
