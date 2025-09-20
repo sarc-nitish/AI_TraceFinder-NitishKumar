@@ -47,21 +47,20 @@ UNET_MODEL_PATH = os.path.join(LOCALIZATION_MODEL_DIR, "unet_tamper_segmentation
 if not os.path.exists(SCANNER_MODEL_PATH):
     gdown.download(id=SCANNER_MODEL_ID, output=SCANNER_MODEL_PATH, quiet=False)
 if not os.path.exists(ENCODER_PATH):
-    gdown.download(id="YOUR_ENCODER_ID", output=ENCODER_PATH, quiet=False)  # Replace with Encoder File ID
+    gdown.download(id="YOUR_ENCODER_ID", output=ENCODER_PATH, quiet=False)  
 if not os.path.exists(SCALER_PATH):
-    gdown.download(id="YOUR_SCALER_ID", output=SCALER_PATH, quiet=False)  # Replace with Scaler File ID
+    gdown.download(id="YOUR_SCALER_ID", output=SCALER_PATH, quiet=False)  
 if not os.path.exists(FP_PATH):
-    gdown.download(id="YOUR_FP_ID", output=FP_PATH, quiet=False)  # Replace with Fingerprints File ID
+    gdown.download(id="YOUR_FP_ID", output=FP_PATH, quiet=False)  
 if not os.path.exists(ORDER_NPY):
-    gdown.download(id="YOUR_ORDER_NPY_ID", output=ORDER_NPY, quiet=False)  # Replace with Order NPY File ID
+    gdown.download(id="YOUR_ORDER_NPY_ID", output=ORDER_NPY, quiet=False)  
 if not os.path.exists(CNN_MODEL_PATH):
     gdown.download(id=CNN_MODEL_ID, output=CNN_MODEL_PATH, quiet=False)
 if not os.path.exists(UNET_MODEL_PATH):
     gdown.download(id=UNET_MODEL_ID, output=UNET_MODEL_PATH, quiet=False)
 
-IMG_SIZE = (320, 320)  # For forgery detection
+IMG_SIZE = (320, 320)  
 
-CURRENT_DATE = "04:31 AM IST, Saturday, September 20, 2025"
 
 # Initialize session state
 if 'history' not in st.session_state:
@@ -505,7 +504,7 @@ if uploaded_file:
     # Right: Forgery Localization Overlay
     with col3:
         if forgery_pred == "Tampered" and mask_bin is not None:
-            if st.button("📍 Forgery Localization Overlay", help="View tampered areas"):
+            if st.button("View Forgery Localization Overlay", help="View tampered areas"):
                 st.session_state.show_overlay = not st.session_state.show_overlay
             if st.session_state.show_overlay:
                 overlay = overlay_mask(np.array(pil_img), mask_bin)
