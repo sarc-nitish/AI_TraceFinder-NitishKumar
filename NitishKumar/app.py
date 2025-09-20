@@ -480,7 +480,7 @@ if uploaded_file:
                 st.markdown(
                     f"""
                     <div style="background-color:#d4edda; padding:15px; border-radius:10px; border:1px solid #28a745;">
-                        <h4 style="color:#155724; margin:0;">✅ Status: Original</h4>
+                        <h4 style="color:#155724; margin:0;"> Status: ✅ Original</h4>
                         <p style="margin:7px 0;">Probability: {tamper_prob*100:.2f}%</p>
                         <p style="margin:7px 0;">Confidence: {scanner_conf:.2f}%</p>
                     </div>
@@ -491,7 +491,7 @@ if uploaded_file:
                 st.markdown(
                     f"""
                     <div style="background-color:#f8d7da; padding:15px; border-radius:10px; border:1px solid #dc3545;">
-                        <h4 style="color:red; margin:0;">⚠Status: Tampered</h4>
+                        <h4 style="color:red; margin:0;">Status: ⚠Tampered</h4>
                         <p style="margin:7px 0; color:#721c24;">Probability: {tamper_prob*100:.2f}%</p>
                         <p style="margin:7px 0; color:#721c24;">Confidence: {scanner_conf:.2f}%</p>
                     </div>
