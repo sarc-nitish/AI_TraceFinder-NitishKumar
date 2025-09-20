@@ -60,7 +60,7 @@ if not os.path.exists(UNET_MODEL_PATH):
     gdown.download(id=UNET_MODEL_ID, output=UNET_MODEL_PATH, quiet=False)
 
 IMG_SIZE = (320, 320)  
-
+CURRENT_DATE = "05:15 AM IST, Saturday, September 20, 2025"
 
 # Initialize session state
 if 'history' not in st.session_state:
