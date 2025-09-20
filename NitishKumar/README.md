@@ -2,7 +2,7 @@
 # TraceFinder - Forensic Scanner Identification  Detection App
 
 ## Live App
- Streamlit app [Tap here](https://aitracefinder-nitishkumar.streamlit.app/)
+ Streamlit app [Tap here](https://aitracefinder-nitishkumar-main.streamlit.app)
 
 ## How to run locally
 1. Clone this repository
