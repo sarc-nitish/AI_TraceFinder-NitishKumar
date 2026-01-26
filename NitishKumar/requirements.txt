@@ -17,4 +17,3 @@ pywavelets>=1.5.0
 tqdm>=4.66.0
 PyMuPDF>=1.23.8
 PyMuPDF>=1.23.8
->>>>>>> 1f2a1bb (Final production release: Clean repo structure with scanner, tamper, and UI improvements)
